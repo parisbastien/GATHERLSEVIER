@@ -1,0 +1,1 @@
+** Here are logged the different DOIs for which an error occured (more likely due to wrong DOI or unavailable article) **
