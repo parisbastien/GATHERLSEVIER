@@ -91,7 +91,7 @@ def save_article(filename, filecontent, single, length, n_articles, url):
         success = True
         filename = filename.replace("<","").replace(">","").replace(":","").replace("\"","").replace("/","").replace("\\","")\
         .replace("|","").replace("?","").replace("*","")
-        with open("../GATHERLSEVIER/saved references/{}.pdf".format(filename), "wb") as opening:
+        with open("./saved references/{}.pdf".format(filename), "wb") as opening:
             opening.write(filecontent)
             if single is True:
                 print(colored("Article saved","green"))
