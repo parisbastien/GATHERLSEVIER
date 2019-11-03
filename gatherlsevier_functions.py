@@ -42,6 +42,7 @@ def retrieve_article(url):
         try:
             success = True
             r = requests.get(url=url)
+            filename = str(r.content).split("Title: ")[1].split("<br>")[0]
             soup = BeautifulSoup(r.content,"html.parser")
 
             for url in soup.find_all("a", href=True):
@@ -59,7 +60,7 @@ def retrieve_article(url):
             success = False
             count += 1
     
-    return fckElsevier, success
+    return fckElsevier, filename, success
 
 
 def download_article(fckElsevier):
@@ -73,7 +74,6 @@ def download_article(fckElsevier):
         try:
             success = True
             r = requests.get(url=fckElsevier)
-            filename = r.headers["Content-Disposition"].split("filename=\"")[1].split(".pdf")[0]
             filecontent = r.content
             break
 
@@ -81,7 +81,7 @@ def download_article(fckElsevier):
             success = False
             count += 1
 
-    return filename, filecontent, success
+    return filecontent, success
 
 
 def save_article(filename, filecontent, single, length, n_articles, url):
@@ -106,6 +106,6 @@ def save_article(filename, filecontent, single, length, n_articles, url):
 
 def error_logs(url):
 
-    print(colored("Something wrong occured (DOI : {}). If it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
+    print(colored("Something wrong occured (DOI : {})\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
     with open("error_logs.txt","a") as opening:
         opening.write("\n{}".format(url.split("=")[1]))

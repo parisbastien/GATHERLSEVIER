@@ -41,9 +41,9 @@ class libgen_scrapper(Thread):
         with item_lock:
             url, success = retrieve_url(single, doi, content)
         if success is True:
-            fckElsevier, success = retrieve_article(url)
+            fckElsevier, filename, success = retrieve_article(url)
             if success is True:
-                filename, filecontent, success = download_article(fckElsevier)
+                filecontent, success = download_article(fckElsevier)
                 if success is True:
                     with save_lock:
                         n_articles, success = save_article(filename, filecontent, single, length, n_articles, url)
