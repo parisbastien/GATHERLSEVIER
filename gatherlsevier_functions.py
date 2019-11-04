@@ -34,7 +34,7 @@ def retrieve_url(single, doi, content):
 def retrieve_article(url):
 
     count = 0
-    fckElsevier = ""
+    fckElsevier, filename = "", ""
     print("Retrieving article...")
 
     while count < 5:
