@@ -75,7 +75,7 @@ def download_article(fckElsevier):
             success = True
             r = requests.get(url=fckElsevier)
             filecontent = r.content
-            if len(filecontent) <= 10 000:
+            if len(filecontent) <= 10000:
                 success = False
             break
 
