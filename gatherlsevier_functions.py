@@ -42,7 +42,7 @@ def retrieve_article(url):
         try:
             success = True
             r = requests.get(url=url)
-            filename = str(r.content).split("Title: ")[1].split("<br>")[0]
+            filename = str(r.content).split("Year: ")[1].split("<br>")[0] + " - " + str(r.content).split("Title: ")[1].split("<br>")[0]
             soup = BeautifulSoup(r.content,"html.parser")
 
             for url in soup.find_all("a", href=True):
@@ -75,6 +75,8 @@ def download_article(fckElsevier):
             success = True
             r = requests.get(url=fckElsevier)
             filecontent = r.content
+            if len(filecontent) <= 10 000:
+                success = False
             break
 
         except:
@@ -106,6 +108,6 @@ def save_article(filename, filecontent, single, length, n_articles, url):
 
 def error_logs(url):
 
-    print(colored("Something wrong occured (DOI : {})\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
+    print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
     with open("error_logs.txt","a") as opening:
         opening.write("\n{}".format(url.split("=")[1]))
