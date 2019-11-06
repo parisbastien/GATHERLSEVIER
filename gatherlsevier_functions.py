@@ -13,6 +13,8 @@ def retrieve_url(single, doi, content):
         success = True
         if single is False:
             doi = content.pop(0)
+            
+        doi = doi.replace("gaelnomade-1","")
 
         delete = 0
         for char in doi:
@@ -42,7 +44,7 @@ def retrieve_article(url):
         try:
             success = True
             r = requests.get(url=url)
-            filename = str(r.content).split("Year: ")[1].split("<br>")[0] + " - " + str(r.content).split("Title: ")[1].split("<br>")[0]
+            filename = str(r.content).split("Author(s): ")[1].split("<br>")[0] + " - " + str(r.content).split("Year: ")[1].split("<br>")[0] + " - " + str(r.content).split("Title: ")[1].split("<br>")[0]
             soup = BeautifulSoup(r.content,"html.parser")
 
             for url in soup.find_all("a", href=True):
