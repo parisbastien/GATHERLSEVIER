@@ -110,6 +110,6 @@ def save_article(filename, filecontent, single, length, n_articles, url):
 
 def error_logs(url):
 
-    print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
+    print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers / the DOI you entered\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
     with open("error_logs.txt","a") as opening:
         opening.write("\n{}".format(url.split("=")[1]))
