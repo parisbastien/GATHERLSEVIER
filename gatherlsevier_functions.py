@@ -123,3 +123,5 @@ def error_logs(url, found):
             
     elif found is False:
         print(colored("Something wrong occured (DOI : {} not found on Libgen's servers)".format(url.split("=")[1]),"red"))
+        with open("error_logs.txt","a") as opening:
+            opening.write("\n{}".format(url.split("=")[1]))
