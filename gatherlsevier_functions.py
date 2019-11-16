@@ -42,8 +42,14 @@ def retrieve_article(url):
     while count < 5:
 
         try:
-            success = True
+            success, found = True, True
+
             r = requests.get(url=url)
+
+            if r.status_code == 404:
+                success, found = False, False
+                break
+
             filename = str(r.content).split("Author(s): ")[1].split("<br>")[0] + " - " + str(r.content).split("Year: ")[1].split("<br>")[0] + " - " + str(r.content).split("Title: ")[1].split("<br>")[0]
             soup = BeautifulSoup(r.content,"html.parser")
 
@@ -62,7 +68,7 @@ def retrieve_article(url):
             success = False
             count += 1
     
-    return fckElsevier, filename, success
+    return fckElsevier, filename, success, found
 
 
 def download_article(fckElsevier):
@@ -108,8 +114,12 @@ def save_article(filename, filecontent, single, length, n_articles, url):
     return n_articles, success
 
 
-def error_logs(url):
+def error_logs(url, found):
 
-    print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers / the DOI you entered\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
-    with open("error_logs.txt","a") as opening:
-        opening.write("\n{}".format(url.split("=")[1]))
+    if found is True:
+        print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
+        with open("error_logs.txt","a") as opening:
+            opening.write("\n{}".format(url.split("=")[1]))
+            
+    elif found is False:
+        print(colored("Something wrong occured (DOI : {} not found on Libgen's servers)".format(url.split("=")[1]),"red"))

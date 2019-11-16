@@ -37,11 +37,12 @@ class libgen_scrapper(Thread):
         global n_articles
         global content
         global length
+        found = True
 
         with item_lock:
             url, success = retrieve_url(single, doi, content)
         if success is True:
-            fckElsevier, filename, success = retrieve_article(url)
+            fckElsevier, filename, success, found = retrieve_article(url)
             if success is True:
                 filecontent, success = download_article(fckElsevier)
                 if success is True:
@@ -50,11 +51,11 @@ class libgen_scrapper(Thread):
                     if success is True:
                         pass
                     else:
-                        error_logs(url)
+                        error_logs(url, found)
                 else:
-                    error_logs(url)
+                    error_logs(url, found)
             else:
-                error_logs(url)
+                error_logs(url, found)
 
 while 1:
     if single is True:
