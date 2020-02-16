@@ -1,11 +1,11 @@
-import requests
+import requests, time, random
 from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit
 from termcolor import colored
 
 
-def retrieve_url(single, doi, content):
+def retrieve_url(single, doi, content, print_lock):
 
     url = ""
 
@@ -33,11 +33,12 @@ def retrieve_url(single, doi, content):
     return url, success
 
 
-def retrieve_article(url):
+def retrieve_article(url, print_lock):
 
     count = 0
     fckElsevier, filename = "", ""
-    print("Retrieving article...")
+    with print_lock:
+        print("Retrieving article...")
 
     while count < 5:
 
@@ -71,57 +72,73 @@ def retrieve_article(url):
     return fckElsevier, filename, success, found
 
 
-def download_article(fckElsevier):
+def download_article(fckElsevier, print_lock):
 
-    count = 0
+    count = 1
     filename, filecontent = "", ""
-    print("Downloading article...")
+    with print_lock:
+        print("Downloading article...")
 
-    while count < 5:
+    while count <= 5:
 
         try:
             success = True
+
             r = requests.get(url=fckElsevier)
             filecontent = r.content
             if len(filecontent) <= 10000:
                 success = False
-            break
+
+            if success is True:
+                break
 
         except:
             success = False
             count += 1
+            time.sleep(random.randrange(1000,5000)/1000)
 
     return filecontent, success
 
 
-def save_article(filename, filecontent, single, length, n_articles, url):
+def save_article(filename, filecontent, single, length, n_articles, url, print_lock):
 
-    try:
-        n_articles += 1
-        success = True
-        filename = filename.replace("<","").replace(">","").replace(":","").replace("\"","").replace("/","").replace("\\","")\
-        .replace("|","").replace("?","").replace("*","")
-        with open("./saved references/{}.pdf".format(filename), "wb") as opening:
-            opening.write(filecontent)
-            if single is True:
-                print(colored("Article saved","green"))
-            else:
-                print(colored("Article {}/{} saved".format(str(n_articles), length),"green"))
-    
-    except:
-        success = False
+    count = 1
+    n_articles += 1
+
+    while count <= 5:
+
+        try:
+            success = True
+            filename = filename.replace("<","").replace(">","").replace(":","").replace("\"","").replace("/","").replace("\\","")\
+            .replace("|","").replace("?","").replace("*","")
+            with open("./saved references/{}.pdf".format(filename), "wb") as opening:
+                opening.write(filecontent)
+                if single is True:
+                    with print_lock:
+                        print(colored("Article saved","green"))
+                else:
+                    with print_lock:
+                        print(colored("Article {}/{} saved".format(str(n_articles), length),"green"))
+            break
+        
+        except:
+            success = False
+            count += 1
+            time.sleep(random.randrange(1000,5000)/1000)
     
     return n_articles, success
 
 
-def error_logs(url, found):
+def error_logs(url, found, print_lock):
 
     if found is True:
-        print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
+        with print_lock:
+            print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(url.split("=")[1]))
             
     elif found is False:
-        print(colored("Something wrong occured (DOI : {} not found on Libgen's servers)".format(url.split("=")[1]),"red"))
+        with print_lock:
+            print(colored("Something wrong occured (DOI : {} not found on Libgen's servers)".format(url.split("=")[1]),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(url.split("=")[1]))

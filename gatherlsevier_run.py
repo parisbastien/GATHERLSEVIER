@@ -1,4 +1,4 @@
-import requests
+import requests, time, random
 from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit
@@ -23,7 +23,7 @@ print("PDF files are saved in the \"saved references\" folder\n\n")
 single = True
 n_articles, n_thread = 0, 0
 content, length, doi = "", "", ""
-item_lock, save_lock = RLock(), RLock()
+item_lock, save_lock, print_lock = RLock(), RLock(), RLock()
 
 class libgen_scrapper(Thread):
 
@@ -40,22 +40,22 @@ class libgen_scrapper(Thread):
         found = True
 
         with item_lock:
-            url, success = retrieve_url(single, doi, content)
+            url, success = retrieve_url(single, doi, content, print_lock)
         if success is True:
-            fckElsevier, filename, success, found = retrieve_article(url)
+            fckElsevier, filename, success, found = retrieve_article(url, print_lock)
             if success is True:
-                filecontent, success = download_article(fckElsevier)
+                filecontent, success = download_article(fckElsevier, print_lock)
                 if success is True:
                     with save_lock:
-                        n_articles, success = save_article(filename, filecontent, single, length, n_articles, url)
+                        n_articles, success = save_article(filename, filecontent, single, length, n_articles, url, print_lock)
                     if success is True:
                         pass
                     else:
-                        error_logs(url, found)
+                        error_logs(url, found, print_lock)
                 else:
-                    error_logs(url, found)
+                    error_logs(url, found, print_lock)
             else:
-                error_logs(url, found)
+                error_logs(url, found, print_lock)
 
 while 1:
     if single is True:
