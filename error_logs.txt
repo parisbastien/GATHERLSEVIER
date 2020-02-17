@@ -1,1 +1,1 @@
-** Here are logged the different DOIs for which an error occured (more likely due to wrong DOI or unavailable article) **
+** Here are logged the different DOIs for which an error occured (either due to wrong DOI, unavailable article, or dev's skills) **

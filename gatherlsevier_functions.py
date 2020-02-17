@@ -40,7 +40,7 @@ def retrieve_article(url, print_lock):
     with print_lock:
         print("Retrieving article...")
 
-    while count < 5:
+    while count <= 10:
 
         try:
             success, found = True, True
@@ -51,7 +51,16 @@ def retrieve_article(url, print_lock):
                 success, found = False, False
                 break
 
-            filename = str(r.content).split("Author(s): ")[1].split("<br>")[0] + " - " + str(r.content).split("Year: ")[1].split("<br>")[0] + " - " + str(r.content).split("Title: ")[1].split("<br>")[0]
+            authors = str(r.content).split("Author(s): ")[1].split("<br>")[0]
+            if len(authors.split(";")) >= 3:
+                authors = ";".join(authors.split(";")[0:3]) + " et al."
+
+            year = str(r.content).split("Year: ")[1].split("<br>")[0]
+
+            title = str(r.content).split("Title: ")[1].split("<br>")[0]
+
+            filename = authors + " - " + year + " - " + title
+
             soup = BeautifulSoup(r.content,"html.parser")
 
             for url in soup.find_all("a", href=True):
@@ -68,18 +77,19 @@ def retrieve_article(url, print_lock):
         except:
             success = False
             count += 1
+            time.sleep(random.randrange(1000,5000)/1000)
     
     return fckElsevier, filename, success, found
 
 
 def download_article(fckElsevier, print_lock):
 
-    count = 1
-    filename, filecontent = "", ""
+    count = 0
+    filecontent = ""
     with print_lock:
         print("Downloading article...")
 
-    while count <= 5:
+    while count <= 10:
 
         try:
             success = True
@@ -88,6 +98,8 @@ def download_article(fckElsevier, print_lock):
             filecontent = r.content
             if len(filecontent) <= 10000:
                 success = False
+                count += 1
+                time.sleep(random.randrange(1000,5000)/1000)
 
             if success is True:
                 break
@@ -102,29 +114,35 @@ def download_article(fckElsevier, print_lock):
 
 def save_article(filename, filecontent, single, length, n_articles, url, print_lock):
 
-    count = 1
+    count = 0
     n_articles += 1
 
-    while count <= 5:
+    while count <= 100:
 
         try:
             success = True
             filename = filename.replace("<","").replace(">","").replace(":","").replace("\"","").replace("/","").replace("\\","")\
             .replace("|","").replace("?","").replace("*","")
-            with open("./saved references/{}.pdf".format(filename), "wb") as opening:
-                opening.write(filecontent)
-                if single is True:
-                    with print_lock:
-                        print(colored("Article saved","green"))
-                else:
-                    with print_lock:
-                        print(colored("Article {}/{} saved".format(str(n_articles), length),"green"))
+
+            if count == 0:
+                with open("./saved references/{}.pdf".format(filename), "wb") as opening:
+                    opening.write(filecontent)
+            else:
+                with open("./saved references/{}.pdf".format(filename[:-count]), "wb") as opening:
+                    opening.write(filecontent)
+
+            if single is True:
+                with print_lock:
+                    print(colored("Article saved","green"))
+            else:
+                with print_lock:
+                    print(colored("Article {}/{} saved".format(str(n_articles), length),"green"))
+
             break
         
         except:
             success = False
             count += 1
-            time.sleep(random.randrange(1000,5000)/1000)
     
     return n_articles, success
 
@@ -133,7 +151,7 @@ def error_logs(url, found, print_lock):
 
     if found is True:
         with print_lock:
-            print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at bastien.paris@etu.univ-grenoble-alpes.fr".format(url.split("=")[1]),"red"))
+            print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at paris.b6stien@gmail.com".format(url.split("=")[1]),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(url.split("=")[1]))
             

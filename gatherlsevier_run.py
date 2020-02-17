@@ -81,7 +81,7 @@ while 1:
         item.join()
     else:
         thread_list = []
-        for i in range(0,5):
+        for i in range(0,10):
             thread_list.append(libgen_scrapper())
         for item in thread_list:
             item.start()
