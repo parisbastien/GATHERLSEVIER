@@ -1,4 +1,4 @@
-import requests, time, random
+import requests, time, random, html
 from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit

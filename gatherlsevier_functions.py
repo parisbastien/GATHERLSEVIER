@@ -1,4 +1,4 @@
-import requests, time, random
+import requests, time, random, html
 from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit
@@ -116,12 +116,21 @@ def save_article(filename, filecontent, single, length, n_articles, url, print_l
 
     count = 0
     n_articles += 1
+    bytes_clearer = 0
+
+    filename = filename.split("\\x")
+    for content in filename:
+        if bytes_clearer != 0:
+            filename[bytes_clearer] = content[2:]
+        bytes_clearer +=1
+    filename = "".join(filename)
+    filename = html.unescape(filename)
 
     while count <= 100:
 
         try:
             success = True
-            filename = filename.replace("<","").replace(">","").replace(":","").replace("\"","").replace("/","").replace("\\","")\
+            filename = filename.replace("<","").replace(">","").replace(":",";").replace("\"","").replace("/","").replace("\\","")\
             .replace("|","").replace("?","").replace("*","")
 
             if count == 0:
