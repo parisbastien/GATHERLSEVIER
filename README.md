@@ -1,5 +1,5 @@
 # GATHERLSEVIER
-This script allows you to instant-download (no captcha or web surfing) the articles you want from libgen.lc and scihub.tw
+This script allows you to instant-download (no captcha or web surfing) the articles you want from libgen.lc and sci-hub.tw
 
 It bypasses any libgen.lc restriction from internet providers (at least in France)
 

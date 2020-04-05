@@ -6,14 +6,14 @@ from termcolor import colored
 from gatherlsevier_functions import *
 
 init()
-client = "SCIHUB"
+client = "SCI-HUB"
 backup = "LIBGEN"
 
 print("This script allows you to instant-download (no captcha or web surfing) the articles you want from "+colored("l","cyan")+\
 colored("i","green")+colored("b","yellow")+colored("g","cyan")+colored("e","green")+colored("n","yellow")+\
 colored(".","cyan")+colored("l","green")+colored("c","yellow")+" and "+colored("s","green")+\
-colored("c","yellow")+colored("i","cyan")+colored("h","green")+colored("u","yellow")+colored("b","cyan")+\
-colored(".","green")+colored("t","yellow")+colored("w\n","cyan"))
+colored("c","yellow")+colored("i","cyan")+colored("-","green")+colored("h","yellow")+colored("u","cyan")+\
+colored("b","green")+colored(".","yellow")+colored("t","cyan")+colored("w\n","green"))
 
 print("It bypasses any "+colored("l","yellow")+colored("i","cyan")+colored("b","green")+\
 colored("g","yellow")+colored("e","cyan")+colored("n","green")+colored(".","yellow")+colored("l","cyan")+\

@@ -27,7 +27,7 @@ def retrieve_url(single, doi, content, print_lock):
 
         doi_x = doi[delete:]
         url["LIBGEN"] = "http://185.39.10.101/scimag/ads.php?doi={}".format(doi_x)
-        url["SCIHUB"] = "https://sci-hub.tw/{}".format(doi_x)
+        url["SCI-HUB"] = "https://sci-hub.tw/{}".format(doi_x)
     
     except:
         success = False
@@ -48,9 +48,9 @@ def retrieve_article(url, print_lock, client):
         if client == "LIBGEN":
 
             if count == 4:
-                print("Switching for Scihub...")
+                print("Switching for Sci-hub...")
                 count += 1
-                client = "SCIHUB"
+                client = "SCI-HUB"
                 backup = True
                 continue
 
@@ -66,9 +66,9 @@ def retrieve_article(url, print_lock, client):
                         success, found = False, False
                         break
                     else:
-                        print("Switching for Scihub...")
+                        print("Switching for Sci-hub...")
                         backup = True
-                        client = "SCIHUB"
+                        client = "SCI-HUB"
                         count = 5
                         continue
                     break
@@ -96,7 +96,7 @@ def retrieve_article(url, print_lock, client):
                 time.sleep(random.randrange(1000,5000)/1000)
     
 
-        elif client == "SCIHUB":
+        elif client == "SCI-HUB":
 
             if count == 4:
                 print("Switching for Libgen...")
@@ -108,7 +108,7 @@ def retrieve_article(url, print_lock, client):
             try:
                 success, found = True, True
 
-                r = requests.get(url=url["SCIHUB"])
+                r = requests.get(url=url["SCI-HUB"])
 
                 soup = BeautifulSoup(r.content,"html.parser")
 
@@ -222,12 +222,12 @@ def error_logs(doi_x, found, print_lock):
 
     if found is True:
         with print_lock:
-            print(colored("Something wrong occured (DOI : {})\nIt may be server-side related (Libgen/Scihub)\nIf it persists over time, help at paris.b6stien@gmail.com".format(doi_x),"red"))
+            print(colored("Something wrong occured (DOI : {})\nIt may be server-side related (Libgen/Sci-hub)\nIf it persists over time, help at paris.b6stien@gmail.com".format(doi_x),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(doi_x))
             
     elif found is False:
         with print_lock:
-            print(colored("Something wrong occured (DOI : {} not found on Libgen and Scihub)".format(doi_x),"red"))
+            print(colored("Something wrong occured (DOI : {} not found on Libgen and Sci-hub)".format(doi_x),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(doi_x))
