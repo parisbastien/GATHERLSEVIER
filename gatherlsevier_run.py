@@ -1,4 +1,4 @@
-import requests, time, random, html
+import requests, time, random, html, os
 from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit
@@ -6,19 +6,26 @@ from termcolor import colored
 from gatherlsevier_functions import *
 
 init()
+client = "SCIHUB"
+backup = "LIBGEN"
 
-print("This script allows you to instant-download the articles you want from "+colored("l","cyan")+\
+print("This script allows you to instant-download (no captcha or web surfing) the articles you want from "+colored("l","cyan")+\
 colored("i","green")+colored("b","yellow")+colored("g","cyan")+colored("e","green")+colored("n","yellow")+\
-colored(".","cyan")+colored("l","green")+colored("c","yellow")+"\n")
+colored(".","cyan")+colored("l","green")+colored("c","yellow")+" and "+colored("s","green")+\
+colored("c","yellow")+colored("i","cyan")+colored("h","green")+colored("u","yellow")+colored("b","cyan")+\
+colored(".","green")+colored("t","yellow")+colored("w\n","cyan"))
 
 print("It bypasses any "+colored("l","yellow")+colored("i","cyan")+colored("b","green")+\
 colored("g","yellow")+colored("e","cyan")+colored("n","green")+colored(".","yellow")+colored("l","cyan")+\
-colored("c","green")+" restriction from internet providers\n")
+colored("c","green")+" restriction from internet providers (at least in France)\n")
 
-print("Bulk download is possible : instead of a DOI, input the full name of a .txt file (i.e., references.txt) \
+print("Bulk instant-download of articles is possible : Instead of a DOI, input the full name of a .txt file (e.g., references.txt) \
 that contains a different DOI on each line\n")
 
 print("PDF files are saved in the \"saved references\" folder\n\n")
+
+print(colored("You are currently targetting {} as main, and {} as backup.".format(client, backup),"green"))
+print("Run gatherlsevier_settings.py to change your preferences\n")
 
 single = True
 n_articles, n_thread = 0, 0
@@ -40,26 +47,26 @@ class libgen_scrapper(Thread):
         found = True
 
         with item_lock:
-            url, success = retrieve_url(single, doi, content, print_lock)
+            url, success, doi_x = retrieve_url(single, doi, content, print_lock)
         if success is True:
-            fckElsevier, filename, success, found = retrieve_article(url, print_lock)
+            pdf_address, filename, success, found = retrieve_article(url, print_lock, client)
             if success is True:
-                filecontent, success = download_article(fckElsevier, print_lock)
+                filecontent, success = download_article(pdf_address, print_lock)
                 if success is True:
                     with save_lock:
                         n_articles, success = save_article(filename, filecontent, single, length, n_articles, url, print_lock)
                     if success is True:
                         pass
                     else:
-                        error_logs(url, found, print_lock)
+                        error_logs(doi_x, found, print_lock)
                 else:
-                    error_logs(url, found, print_lock)
+                    error_logs(doi_x, found, print_lock)
             else:
-                error_logs(url, found, print_lock)
+                error_logs(doi_x, found, print_lock)
 
 while 1:
     if single is True:
-        doi = input("DOI / File name (case sensitive) ? ")
+        doi = input("DOI / File name (case sensitive if file name) ? ")
 
         if ".txt" in doi:
             single = False

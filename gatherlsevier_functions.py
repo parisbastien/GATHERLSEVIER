@@ -1,4 +1,4 @@
-import requests, time, random, html
+import requests, time, random, html, os
 from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit
@@ -7,7 +7,8 @@ from termcolor import colored
 
 def retrieve_url(single, doi, content, print_lock):
 
-    url = ""
+    url = {}
+    doi_x = ""
 
     try:
         success = True
@@ -24,65 +25,126 @@ def retrieve_url(single, doi, content, print_lock):
             except:
                 delete += 1
 
-        doi = doi[delete:]
-        url = "http://185.39.10.101/scimag/ads.php?doi={}".format(doi)
+        doi_x = doi[delete:]
+        url["LIBGEN"] = "http://185.39.10.101/scimag/ads.php?doi={}".format(doi_x)
+        url["SCIHUB"] = "https://sci-hub.tw/{}".format(doi_x)
     
     except:
         success = False
 
-    return url, success
+    return url, success, doi_x
 
 
-def retrieve_article(url, print_lock):
+def retrieve_article(url, print_lock, client):
 
+    backup = False
     count = 0
-    fckElsevier, filename = "", ""
+    pdf_address, filename = "", ""
     with print_lock:
         print("Retrieving article...")
-
+    
     while count <= 10:
 
-        try:
-            success, found = True, True
+        if client == "LIBGEN":
 
-            r = requests.get(url=url)
+            if count == 4:
+                print("Switching for Scihub...")
+                count += 1
+                client = "SCIHUB"
+                backup = True
+                continue
 
-            if r.status_code == 404:
-                success, found = False, False
-                break
+            try:
+                success, found = True, True
 
-            authors = str(r.content).split("Author(s): ")[1].split("<br>")[0]
-            if len(authors.split(";")) >= 3:
-                authors = ";".join(authors.split(";")[0:3]) + " et al."
+                r = requests.get(url=url["LIBGEN"])
+                
+                soup = BeautifulSoup(r.content,"html.parser")
 
-            year = str(r.content).split("Year: ")[1].split("<br>")[0]
-
-            title = str(r.content).split("Title: ")[1].split("<br>")[0]
-
-            filename = authors + " - " + year + " - " + title
-
-            soup = BeautifulSoup(r.content,"html.parser")
-
-            for url in soup.find_all("a", href=True):
-                fckElsevier = url.get("href")
-                if "booksdl.org" in str(fckElsevier).lower():
+                if "wrong parameter doi" in str(r.content).lower() or "book with such" in str(r.content).lower():
+                    if backup is True:
+                        success, found = False, False
+                        break
+                    else:
+                        print("Switching for Scihub...")
+                        backup = True
+                        client = "SCIHUB"
+                        count = 5
+                        continue
                     break
 
-            if "wrong parameter doi" in str(r.content).lower() or "book with such" in str(r.content).lower():
-                success = False
+                for url in soup.find_all("a", href=True):
+                    pdf_address = url.get("href")
+                    if "booksdl.org" in str(pdf_address).lower():
+                        break
+
+
+                authors = str(r.content).split("Author(s): ")[1].split("<br>")[0]
+                if len(authors.split(";")) >= 3:
+                    authors = ";".join(authors.split(";")[0:3]) + " et al."
+
+                year = str(r.content).split("Year: ")[1].split("<br>")[0]
+
+                title = str(r.content).split("Title: ")[1].split("<br>")[0]
+
+                filename = authors + " (" + year + "). " + title
                 break
 
-            break
-
-        except:
-            success = False
-            count += 1
-            time.sleep(random.randrange(1000,5000)/1000)
+            except:
+                success = False
+                count += 1
+                time.sleep(random.randrange(1000,5000)/1000)
     
-    return fckElsevier, filename, success, found
+
+        elif client == "SCIHUB":
+
+            if count == 4:
+                print("Switching for Libgen...")
+                count += 1
+                client = "LIBGEN"
+                backup = True
+                continue
+
+            try:
+                success, found = True, True
+
+                r = requests.get(url=url["SCIHUB"])
+
+                soup = BeautifulSoup(r.content,"html.parser")
+
+                if "article not found" in str(r.content).lower():
+                    if backup is True:
+                        success, found = False, False
+                        break
+                    else:
+                        print("Switching for Libgen...")
+                        backup = True
+                        client = "LIBGEN"
+                        count = 5
+                        continue
+
+                for url in soup.find_all("iframe"):
+                    pdf_address = url.get("src")
 
 
-def download_article(fckElsevier, print_lock):
+                filename = str(r.content).split('onclick = "clip(this)">')[1].split("</i>")[0].replace("<i>","").replace("\\xe2\\x80\\x93","-")
+
+                if len(filename.split(".,")) > 3:
+                    authors = ".,".join(filename.split(".,")[0:3])
+                    title = "., et al. ("+ filename.split(" (")[1]
+                    filename = authors + title
+                    
+                break
+
+            except:
+                success = False
+                count += 1
+                time.sleep(random.randrange(1000,5000)/1000)
+
+    return pdf_address, filename, success, found
+
+
+def download_article(pdf_address, print_lock):
 
     count = 0
     filecontent = ""
@@ -94,7 +156,7 @@ def download_article(fckElsevier, print_lock):
         try:
             success = True
 
-            r = requests.get(url=fckElsevier)
+            r = requests.get(url=pdf_address)
             filecontent = r.content
             if len(filecontent) <= 10000:
                 success = False
@@ -130,7 +192,7 @@ def save_article(filename, filecontent, single, length, n_articles, url, print_l
 
         try:
             success = True
-            filename = filename.replace("<","").replace(">","").replace(":",";").replace("\"","").replace("/","").replace("\\","")\
+            filename = filename.replace("<","").replace(">","").replace(":"," -").replace("\"","").replace("/","").replace("\\","")\
             .replace("|","").replace("?","").replace("*","")
 
             if count == 0:
@@ -156,16 +218,16 @@ def save_article(filename, filecontent, single, length, n_articles, url, print_l
     return n_articles, success
 
 
-def error_logs(url, found, print_lock):
+def error_logs(doi_x, found, print_lock):
 
     if found is True:
         with print_lock:
-            print(colored("Something wrong occured (DOI : {})\nIt may be related to Libgen's servers\nIf it persists, help at paris.b6stien@gmail.com".format(url.split("=")[1]),"red"))
+            print(colored("Something wrong occured (DOI : {})\nIt may be server-side related (Libgen/Scihub)\nIf it persists over time, help at paris.b6stien@gmail.com".format(doi_x),"red"))
         with open("error_logs.txt","a") as opening:
-            opening.write("\n{}".format(url.split("=")[1]))
+            opening.write("\n{}".format(doi_x))
             
     elif found is False:
         with print_lock:
-            print(colored("Something wrong occured (DOI : {} not found on Libgen's servers)".format(url.split("=")[1]),"red"))
+            print(colored("Something wrong occured (DOI : {} not found on Libgen and Scihub)".format(doi_x),"red"))
         with open("error_logs.txt","a") as opening:
-            opening.write("\n{}".format(url.split("=")[1]))
+            opening.write("\n{}".format(doi_x))
