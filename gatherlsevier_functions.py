@@ -222,7 +222,7 @@ def error_logs(doi_x, found, print_lock):
 
     if found is True:
         with print_lock:
-            print(colored("Something wrong occured (DOI : {})\nIt may be server-side related (Libgen/Scihub)\nIf it persists over time, help at paris.b6stien@gmail.com".format(doi_x),"red"))
+            print(colored("Something wrong occured (DOI : {})\nIt may be server-side related (Libgen/Scihub)\nIf it persists over time, please contact paris.bastien@hotmail.com".format(doi_x),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(doi_x))
             
