@@ -54,9 +54,10 @@ class libgen_scrapper(Thread):
                 filecontent, success = download_article(pdf_address, print_lock)
                 if success is True:
                     with save_lock:
-                        n_articles, success = save_article(filename, filecontent, single, length, n_articles, url, print_lock)
+                        filename, n_articles, success = save_article(filename, filecontent, single, length, n_articles, url, print_lock)
                     if success is True:
-                        pass
+                        if single is True:
+                            os.startfile("{}\\saved references\\{}.pdf".format(os.path.abspath(os.getcwd()), filename))
                     else:
                         error_logs(doi_x, found, print_lock)
                 else:

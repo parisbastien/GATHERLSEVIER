@@ -26,8 +26,8 @@ def retrieve_url(single, doi, content, print_lock):
                 delete += 1
 
         doi_x = doi[delete:]
-        url["LIBGEN"] = "http://185.39.10.101/scimag/ads.php?doi={}".format(doi_x)
-        url["SCI-HUB"] = "https://sci-hub.tw/{}".format(doi_x)
+        url["LIBGEN"] = "http://111.90.145.71/scimag/get.php?doi={}".format(doi_x)
+        url["SCI-HUB"] = "https://scihub.unblockit.dev/{}".format(doi_x)
     
     except:
         success = False
@@ -75,7 +75,7 @@ def retrieve_article(url, print_lock, client):
 
                 for url in soup.find_all("a", href=True):
                     pdf_address = url.get("href")
-                    if "booksdl.org" in str(pdf_address).lower():
+                    if "/scimag/" in str(pdf_address).lower():
                         break
 
 
@@ -215,7 +215,7 @@ def save_article(filename, filecontent, single, length, n_articles, url, print_l
             success = False
             count += 1
     
-    return n_articles, success
+    return filename, n_articles, success
 
 
 def error_logs(doi_x, found, print_lock):
