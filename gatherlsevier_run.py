@@ -4,27 +4,23 @@ from bs4 import BeautifulSoup
 from colorama import init, deinit
 from termcolor import colored
 from gatherlsevier_functions import *
+from gatherlsevier_client import *
 
 init()
-client = "SCI-HUB"
-backup = "LIBGEN"
 
 print("This script allows you to instant-download (no captcha or web surfing) the articles you want from "+colored("l","cyan")+\
-colored("i","green")+colored("b","yellow")+colored("g","cyan")+colored("e","green")+colored("n","yellow")+\
-colored(".","cyan")+colored("l","green")+colored("c","yellow")+" and "+colored("s","green")+\
-colored("c","yellow")+colored("i","cyan")+colored("-","green")+colored("h","yellow")+colored("u","cyan")+\
-colored("b","green")+colored(".","yellow")+colored("t","cyan")+colored("w\n","green"))
+colored("i","green")+colored("b","yellow")+colored("g","cyan")+colored("e","green")+colored("n","yellow")+" and "+colored("s","green")+\
+colored("c","yellow")+colored("i","cyan")+colored("-","green")+colored("h","yellow")+colored("u","cyan")+colored("b","green"))
 
 print("It bypasses any "+colored("l","yellow")+colored("i","cyan")+colored("b","green")+\
-colored("g","yellow")+colored("e","cyan")+colored("n","green")+colored(".","yellow")+colored("l","cyan")+\
-colored("c","green")+" restriction from internet providers (at least in France)\n")
+colored("g","yellow")+colored("e","cyan")+colored("n","green")+colored(" restriction from internet providers (at least in France)\n"))
 
 print("Bulk instant-download of articles is possible : Instead of a DOI, input the full name of a .txt file (e.g., references.txt) \
 that contains a different DOI on each line\n")
 
 print("PDF files are saved in the \"saved references\" folder\n\n")
 
-print(colored("You are currently targetting {} as main, and {} as backup.".format(client, backup),"green"))
+print(colored("You are currently targetting {} as main, and {} as backup.".format(main, backup),"green"))
 print("Run gatherlsevier_settings.py to change your preferences\n")
 
 single = True
@@ -49,7 +45,7 @@ class libgen_scrapper(Thread):
         with item_lock:
             url, success, doi_x = retrieve_url(single, doi, content, print_lock)
         if success is True:
-            pdf_address, filename, success, found = retrieve_article(url, print_lock, client)
+            pdf_address, filename, success, found = retrieve_article(url, print_lock, main)
             if success is True:
                 filecontent, success = download_article(pdf_address, print_lock)
                 if success is True:

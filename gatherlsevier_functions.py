@@ -35,7 +35,7 @@ def retrieve_url(single, doi, content, print_lock):
     return url, success, doi_x
 
 
-def retrieve_article(url, print_lock, client):
+def retrieve_article(url, print_lock, main):
 
     backup = False
     count = 0
@@ -45,12 +45,12 @@ def retrieve_article(url, print_lock, client):
     
     while count <= 10:
 
-        if client == "LIBGEN":
+        if main == "LIBGEN":
 
             if count == 4:
                 print("Switching for Sci-hub...")
                 count += 1
-                client = "SCI-HUB"
+                main = "SCI-HUB"
                 backup = True
                 continue
 
@@ -68,7 +68,7 @@ def retrieve_article(url, print_lock, client):
                     else:
                         print("Switching for Sci-hub...")
                         backup = True
-                        client = "SCI-HUB"
+                        main = "SCI-HUB"
                         count = 5
                         continue
                     break
@@ -96,12 +96,12 @@ def retrieve_article(url, print_lock, client):
                 time.sleep(random.randrange(1000,5000)/1000)
     
 
-        elif client == "SCI-HUB":
+        elif main == "SCI-HUB":
 
             if count == 4:
                 print("Switching for Libgen...")
                 count += 1
-                client = "LIBGEN"
+                main = "LIBGEN"
                 backup = True
                 continue
 
@@ -119,7 +119,7 @@ def retrieve_article(url, print_lock, client):
                     else:
                         print("Switching for Libgen...")
                         backup = True
-                        client = "LIBGEN"
+                        main = "LIBGEN"
                         count = 5
                         continue
 
@@ -222,7 +222,7 @@ def error_logs(doi_x, found, print_lock):
 
     if found is True:
         with print_lock:
-            print(colored("Something wrong occured (DOI : {})\nIt may be server-side related (Libgen/Sci-hub)\nIf it persists over time, help at paris.b6stien@gmail.com".format(doi_x),"red"))
+            print(colored("Something wrong occured (DOI : {})\nIt may be server-side related (Libgen/Sci-hub)\nIf it persists over time, help at paris.bastien@hotmail.com".format(doi_x),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(doi_x))
             

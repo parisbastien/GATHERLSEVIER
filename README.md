@@ -19,4 +19,4 @@ HOW TO RUN IT?
 
 
 INSTALLATION TROUBLESHOOTING
-You can mail paris.b6stien@gmail.com
+You can mail paris.bastien@hotmail.com
