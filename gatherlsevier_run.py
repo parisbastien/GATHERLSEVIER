@@ -3,30 +3,46 @@ from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit
 from termcolor import colored
+from stem import Signal
+from stem.control import Controller
 from gatherlsevier_functions import *
 from gatherlsevier_client import *
 
 init()
 
-print("This script allows you to instant-download (no captcha or web surfing) the articles you want from "+colored("l","cyan")+\
-colored("i","green")+colored("b","yellow")+colored("g","cyan")+colored("e","green")+colored("n","yellow")+" and "+colored("s","green")+\
-colored("c","yellow")+colored("i","cyan")+colored("-","green")+colored("h","yellow")+colored("u","cyan")+colored("b","green"))
+print("This script allows you to instant download (no captcha or web surfing) the articles you want from libgen and sci-hub\n")
 
-print("It bypasses any "+colored("l","yellow")+colored("i","cyan")+colored("b","green")+\
-colored("g","yellow")+colored("e","cyan")+colored("n","green")+colored(" restriction from internet providers (at least in France)\n"))
+print("Requests can be routed through the TOR network to avoid restrictions from internet service providers. Check the following YouTube video for a tutorial on how to achieve so https://www.youtube.com/watch?v=wJfa0qEzpJc\n")
 
-print("Bulk instant-download of articles is possible : Instead of a DOI, input the full name of a .txt file (e.g., references.txt) \
+print("Bulk instant download of articles is possible: Instead of a DOI, input the full name of a .txt file (e.g., references.txt) \
 that contains a different DOI on each line\n")
 
 print("PDF files are saved in the \"saved references\" folder\n\n")
-
+    
 print(colored("You are currently targetting {} as main, and {} as backup.".format(main, backup),"green"))
-print("Run gatherlsevier_settings.py to change your preferences\n")
+if tor_use is True:
+    print(colored("Requests will be routed through the TOR network", "green"))
+elif tor_use is False:
+    print(colored("Requests will not be routed through the TOR network", "red"))
+
+try:
+    local_ip = requests.get("http://httpbin.org/ip").json()["origin"]
+    print("\nlocal IP is {}".format(local_ip))
+except:
+    print("unable to determine local IP")
+try:
+    tor_ip = requests.get("http://httpbin.org/ip", proxies=tor_proxies).json()["origin"]
+    print("tor IP is {}".format(tor_ip))
+except:
+    print("unable to determine tor IP")
+
+print("\nEdit gatherlsevier_client.py to change your preferences\n")
 
 single = True
 n_articles, n_thread = 0, 0
 content, length, doi = "", "", ""
 item_lock, save_lock, print_lock = RLock(), RLock(), RLock()
+timer = 0
 
 class libgen_scrapper(Thread):
 

@@ -3,6 +3,10 @@ from threading import Thread, RLock
 from bs4 import BeautifulSoup
 from colorama import init, deinit
 from termcolor import colored
+from stem import Signal
+from stem.control import Controller
+from gatherlsevier_client import *
+
 
 
 def retrieve_url(single, doi, content, print_lock):
@@ -27,7 +31,7 @@ def retrieve_url(single, doi, content, print_lock):
 
         doi_x = doi[delete:]
         url["LIBGEN"] = "http://111.90.145.71/scimag/get.php?doi={}".format(doi_x)
-        url["SCI-HUB"] = "https://scihub.unblockit.dev/{}".format(doi_x)
+        url["SCI-HUB"] = "https://sci-hub.ru/{}".format(doi_x)
     
     except:
         success = False
@@ -57,7 +61,7 @@ def retrieve_article(url, print_lock, main):
             try:
                 success, found = True, True
 
-                r = requests.get(url=url["LIBGEN"])
+                r = web_req(url["LIBGEN"], tor_use)
                 
                 soup = BeautifulSoup(r.content,"html.parser")
 
@@ -108,7 +112,7 @@ def retrieve_article(url, print_lock, main):
             try:
                 success, found = True, True
 
-                r = requests.get(url=url["SCI-HUB"])
+                r = web_req(url["SCI-HUB"], tor_use)
 
                 soup = BeautifulSoup(r.content,"html.parser")
 
@@ -123,8 +127,9 @@ def retrieve_article(url, print_lock, main):
                         count = 5
                         continue
 
-                for url in soup.find_all("iframe"):
-                    pdf_address = url.get("src")
+                src_pdf_addresss = str(r.content).split("src=\"")
+                for pdf_address in src_pdf_addresss:
+                    pdf_address = "https:" + pdf_address.split("\"")[0]
 
 
                 filename = str(r.content).split('onclick = "clip(this)">')[1].split("</i>")[0].replace("<i>","").replace("\\xe2\\x80\\x93","-")
@@ -156,7 +161,7 @@ def download_article(pdf_address, print_lock):
         try:
             success = True
 
-            r = requests.get(url=pdf_address)
+            r = web_req(pdf_address, tor_use)
             filecontent = r.content
             if len(filecontent) <= 10000:
                 success = False
@@ -231,3 +236,22 @@ def error_logs(doi_x, found, print_lock):
             print(colored("Something wrong occured (DOI : {} not found on Libgen and Sci-hub)".format(doi_x),"red"))
         with open("error_logs.txt","a") as opening:
             opening.write("\n{}".format(doi_x))
+
+
+#-------------------------------------------------------------------------------------
+#TOR SETTINGS
+#Check the following YouTube video to setup TOR appropriately on your computer
+#https://www.youtube.com/watch?v=wJfa0qEzpJc
+#-------------------------------------------------------------------------------------
+tor_password = "yourpassword"
+
+tor_proxies = {'http': 'socks5://127.0.0.1:9050',
+    'https': 'socks5://127.0.0.1:9050'} 
+#-------------------------------------------------------------------------------------
+
+
+def web_req(url, tor_use):
+    if tor_use is True:
+        return requests.get(url, proxies=tor_proxies)
+    elif tor_use is False:
+        return requests.get(url)
