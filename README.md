@@ -1,5 +1,5 @@
 # GATHERLSEVIER
-This script allows you to instant-download (no captcha or web surfing) the articles you want from libgen and sci-hub
+GATHERLSEVIER allows you to instant-download (no captcha or web surfing) the articles you want from libgen and sci-hub
 
 Requests can be routed through the TOR network to avoid restrictions from internet service providers
 
